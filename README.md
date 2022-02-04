@@ -1,6 +1,6 @@
 This is a repository to keep supplementary files and analysis steps in one place for the **Whole genome functional characterization of RE1 silencers using a modified massively parallel reporter assay** paper by Mouri et all.
 
-<details open>
+<details>
 <summary>Initial analysis steps</summary>
 <br>
   This step uses the DUOmodel functions in the <a href="https://github.com/tewhey-lab/MPRAduo" target="_top">MPRAduo</a> pipeline
@@ -35,7 +35,7 @@ This is a repository to keep supplementary files and analysis steps in one place
     duoLogCor(RESTscreen_seq, RESTscreen_condition, "20201207_RESTscreen")
 </details>
 
-<details open>
+<details>
 <summary>Read results files back into environment</summary>
 <br>
   
@@ -52,7 +52,7 @@ This is a repository to keep supplementary files and analysis steps in one place
     standard_res$SKNSH <- read.delim("results/20201207_RESTscreen_SKNSH_results.run1.txt", stringsAsFactors = F)
 </details>
 
-<details open>
+<details>
 <summary>Categorize ChIP positivity of oligos</summary>
 <br>
 
@@ -153,7 +153,7 @@ This is a repository to keep supplementary files and analysis steps in one place
     }
 </details>      
   
-<details open>
+<details>
 <summary>Set up FIMO scores for ref/scr/noMotif oligos</summary>
 <br>
   
