@@ -11,7 +11,7 @@ from scipy import stats
 seg = 20.86
 enhancer = 'En19'
 
-df = pd.read_table('processed_data/20201103_RESTscreen_AF_K562_emVAR.out', sep='\t')
+df = pd.read_table('processed_data/RESTscreen_AF_K562_emVAR.out', sep='\t')
 df = df.dropna(subset=['LogSkew'])
 df = df[df['ID'].str.contains(enhancer)]
 df = df[df['ID'].str.contains(':wP')]
