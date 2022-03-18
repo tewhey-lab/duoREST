@@ -22,6 +22,20 @@ for(celltype in unique(tf_plots$celltype)){
 tf_plots$tf_stat <- as.factor(tf_plots$tf_stat)
 tf_plots$celltype <- as.factor(tf_plots$celltype)
 
+accession_tf_name_map <- read.delim("ENCODE_ChIP/complete_histone_tf_list.txt", stringsAsFactors = F)
+colnames(accession_tf_name_map) <- c("Accession","Target","Celltype")
+
+accession_celltype_list <- list()
+accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="SK-N-SH")] <- "SKNSH"
+accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="HEPG2")] <- "HepG2"
+for(celltype in unique(accession_tf_name_map$Celltype)){
+  message(celltype)
+  accession_celltype_list[[celltype]] <- list()
+  for(tf in unique(accession_tf_name_map$Target[which(accession_tf_name_map$Celltype==celltype)])){
+    # if(tf=="REST") next
+    accession_celltype_list[[celltype]][[tf]] <- accession_tf_name_map$Accession[which(accession_tf_name_map$Target==tf & accession_tf_name_map$Celltype==celltype)]
+  }
+}
 
 bound_factor <- tf_plots[,1:5]
 bound_factor$REST <- "unbound"
@@ -55,8 +69,10 @@ for(celltype in names(scramble_skew)){
 bound_factor$skew_na <- is.na(bound_factor$LogSkew)
 
 bound_factor$num_bound <- NA
+bound_tf_names <- list()
 for(celltype in names(chip_tf_celltypes)){
   message(celltype)
+  bound_tf_names[[celltype]] <- list()
   for(sil in unique(bound_factor$silencer[which(bound_factor$celltype==celltype)])){
     acc_bound <- colnames(chip_tf_celltypes[[celltype]])[chip_tf_celltypes[[celltype]][which(chip_tf_celltypes[[celltype]]$name==sil),]==1]
     tf_bound <- unique(accession_tf_name_map$Target[which(accession_tf_name_map$Accession %in% acc_bound)])
@@ -65,20 +81,20 @@ for(celltype in names(chip_tf_celltypes)){
   }
 }
 
-accession_tf_name_map <- read.delim("ENCODE_ChIP/complete_histone_tf_list.txt", stringsAsFactors = F)
-colnames(accession_tf_name_map) <- c("Accession","Target","Celltype")
-
-accession_celltype_list <- list()
-accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="SK-N-SH")] <- "SK.N.SH"
-accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="HEPG2")] <- "HepG2"
-for(celltype in unique(accession_tf_name_map$Celltype)){
-  message(celltype)
-  accession_celltype_list[[celltype]] <- list()
-  for(tf in unique(accession_tf_name_map$Target[which(accession_tf_name_map$Celltype==celltype)])){
-    # if(tf=="REST") next
-    accession_celltype_list[[celltype]][[tf]] <- accession_tf_name_map$Accession[which(accession_tf_name_map$Target==tf & accession_tf_name_map$Celltype==celltype)]
-  }
-}
+# accession_tf_name_map <- read.delim("ENCODE_ChIP/complete_histone_tf_list.txt", stringsAsFactors = F)
+# colnames(accession_tf_name_map) <- c("Accession","Target","Celltype")
+# 
+# accession_celltype_list <- list()
+# accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="SK-N-SH")] <- "SK.N.SH"
+# accession_tf_name_map$Celltype[which(accession_tf_name_map$Celltype=="HEPG2")] <- "HepG2"
+# for(celltype in unique(accession_tf_name_map$Celltype)){
+#   message(celltype)
+#   accession_celltype_list[[celltype]] <- list()
+#   for(tf in unique(accession_tf_name_map$Target[which(accession_tf_name_map$Celltype==celltype)])){
+#     # if(tf=="REST") next
+#     accession_celltype_list[[celltype]][[tf]] <- accession_tf_name_map$Accession[which(accession_tf_name_map$Target==tf & accession_tf_name_map$Celltype==celltype)]
+#   }
+# }
 
 tf_sil_list <- list()
 for(celltype in names(accession_celltype_list)){
@@ -203,11 +219,15 @@ for(celltype in names(tf_sil_list)){
 
 med_comp_plot_df$delta_AC <- med_comp_plot_df$A_med - med_comp_plot_df$C_med
 med_comp_plot_df$delta_BD <- med_comp_plot_df$B_med - med_comp_plot_df$D_med
+
+med_comp_plot_df$A_C_adj <- p.adjust(med_comp_plot_df$A_C_sig, method = "hochberg")
+med_comp_plot_df$B_D_adj <- p.adjust(med_comp_plot_df$B_D_sig, method = "hochberg")
+
 med_comp_plot_df$significance <- NA
-med_comp_plot_df$significance[which(med_comp_plot_df$A_C_sig < 0.05 & med_comp_plot_df$B_D_sig < 0.05)] <- "both"
-med_comp_plot_df$significance[which(med_comp_plot_df$A_C_sig < 0.05 & med_comp_plot_df$B_D_sig > 0.05)] <- "REST+ only"
-med_comp_plot_df$significance[which(med_comp_plot_df$A_C_sig > 0.05 & med_comp_plot_df$B_D_sig < 0.05)] <- "REST- only"
-med_comp_plot_df$significance[which(med_comp_plot_df$A_C_sig > 0.05 & med_comp_plot_df$B_D_sig > 0.05)] <- "neither"
+med_comp_plot_df$significance[which(med_comp_plot_df$A_C_adj < 0.05 & med_comp_plot_df$B_D_adj < 0.05)] <- "both"
+med_comp_plot_df$significance[which(med_comp_plot_df$A_C_adj < 0.05 & med_comp_plot_df$B_D_adj > 0.05)] <- "REST+ only"
+med_comp_plot_df$significance[which(med_comp_plot_df$A_C_adj > 0.05 & med_comp_plot_df$B_D_adj < 0.05)] <- "REST- only"
+med_comp_plot_df$significance[which(med_comp_plot_df$A_C_adj > 0.05 & med_comp_plot_df$B_D_adj > 0.05)] <- "neither"
 med_comp_plot_df$significance <- factor(med_comp_plot_df$significance, levels = c("both","REST+ only","REST- only","neither"))
 
 for(celltype in unique(med_comp_plot_df$celltype)){
@@ -221,14 +241,19 @@ for(celltype in unique(med_comp_plot_df$celltype)){
     min_bd <- min(cell_enh_sub$delta_BD, na.rm = T)
     x_max <- max(abs(max_ac), abs(min_ac))
     y_max <- max(abs(max_bd), abs(min_bd))
-    # pdf(paste0("plots/tf_analysis/scatter_plots/",celltype,"_",enh,"_delta_bound_v_unbound_centered.pdf"), height=55/25.4, width = 55/25.4)
+    # pdf(paste0("plots/tf_analysis/scatter_plots/",celltype,"_",enh,"_delta_bound_v_unbound_centered_bhadj.pdf"), height=55/25.4, width = 55/25.4)
     a <- ggplot(cell_enh_sub, aes(x=delta_AC, y=delta_BD, col=significance, key=tf)) + geom_point(aes(alpha=0.3), size=2) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
-      xlim(-x_max,x_max) + ylim(-y_max,y_max) + xlab("") + ylab("") +
+      xlim(-x_max,x_max) + ylim(-y_max,y_max) + xlab("") + ylab(NULL) +
       theme_light(base_size = 6) + scale_color_manual(values = c("red","dodgerblue","green3","black"),name="Significance") +
-      theme(legend.position = "bottom", legend.margin=margin(t = -0.5, unit='cm'),legend.justification = "left", legend.key.width = unit(0.7, "mm")) + 
+      theme(legend.position = "bottom", legend.margin=margin(t = -0.6, unit='cm'),legend.justification = "left", legend.key.width = unit(0.6, "mm")) + 
       guides(fill=guide_legend(nrow = 1),shape=guide_legend(override.aes = list(size = 0.5)),color = guide_legend(override.aes = list(size = 0.5)),
              alpha=F, size=F)
+    # print(a)
     # dev.off()
+    
+    a_ly <- ggplotly(a)
+    htmlwidgets::saveWidget(as_widget(a_ly), paste0("plots/tf_analysis/scatter_plots/",celltype,"_",enh,"_delta_bound_v_unbound_centered_bhadj.html"))
+    
     # pdf(paste0("plots/tf_analysis/scatter_plots/",celltype,"_",enh,"_delta_bound_v_unbound.pdf"), height=55/25.4, width = 55/25.4)
     # print(ggplot(cell_enh_sub, aes(x=delta_AC, y=delta_BD, col=significance)) + geom_point(aes(alpha=0.3), size=2) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
     #         xlim(-2.5,7.25) + ylim(-2.5,7.25) + xlab("") + ylab("") +
@@ -237,5 +262,6 @@ for(celltype in unique(med_comp_plot_df$celltype)){
     #         guides(fill=guide_legend(nrow = 1),shape=guide_legend(override.aes = list(size = 0.5)),color = guide_legend(override.aes = list(size = 0.5)),
     #                alpha=F, size=F)) 
     # dev.off()
+    
   }
 }
