@@ -86,13 +86,13 @@ for i in range(len(df)):
     elif df.loc[i,'stopR'] < df.loc[i,'startL']:
         gap = df.loc[i,'startL'] - df.loc[i,'stopR'] -1
         if strands == '++':
-            alignment = 'atypically_spaced'
-        elif strands == '--' :
             alignment = 'flipped'
+        elif strands == '--' :
+            alignment = 'atypically_spaced'
         elif strands == '+-':
-            alignment = 'convergent'
-        else:
             alignment = 'divergent'
+        else:
+            alignment = 'convergent'
 
     else:
         gap = 'NA'
