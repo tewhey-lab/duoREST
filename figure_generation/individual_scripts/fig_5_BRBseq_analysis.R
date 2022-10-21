@@ -8,8 +8,7 @@ df1 <- df[grepl('ENSG', df$Gene_id),]
 df1 <- df1[,grepl('_r', colnames(df1))]
 df1 <- df1[,order(names(df1))]
 NTs <- df1[, grepl('NT', colnames(df1))]
-coldata <- read.delim('VC_colData.txt', sep='\t',header=TRUE)
-coldata <- read.delim('VC_colData.txt', sep='\t',header=TRUE, row.names=1)
+coldata <- read.delim('fig_5_BRBseq_colData.txt', sep='\t',header=TRUE, row.names=1)
 
 
 #### running target1 ####
